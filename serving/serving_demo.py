@@ -38,5 +38,8 @@ data = json.dumps({"signature_name": "serving_default", "instances": test_images
 json_response = requests.post('http://localhost:8501/v1/models/kubeflow-mnist:predict', data=data, headers=headers)
 predictions = json.loads(json_response.text)['predictions']
 
+print(f'Predictions: {predictionsß}')
+
+
 show(0, 'The model thought this was a {} (class {}), and it was actually a {} (class {})'.format(
   class_names[np.argmax(predictions[0])], np.argmax(predictions[0]), class_names[test_labels[0]], test_labels[0]))
