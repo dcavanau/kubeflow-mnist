@@ -17,12 +17,12 @@ def show(idx, title):
     plt.title('\n\n{}'.format(title), fontdict={'size': 16})
     plt.show()
 
-data = "/root/data"
+data_dir = "/root/data"
 
-with open(os.path.join('data', 'test_images.pickle'), 'rb') as f:
+with open(os.path.join(data_dir, 'test_images.pickle'), 'rb') as f:
     test_images = pickle.load(f)
 
-with open(os.path.join('data', 'test_labels.pickle'), 'rb') as f:
+with open(os.path.join(data_dir, 'test_labels.pickle'), 'rb') as f:
     test_labels = pickle.load(f)
 
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
