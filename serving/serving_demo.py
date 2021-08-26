@@ -17,29 +17,35 @@ def show(idx, title):
     plt.title('\n\n{}'.format(title), fontdict={'size': 16})
     plt.show()
 
-data_dir = "/root/data"
+def servedemo((data_dir: str):
 
-with open(os.path.join(data_dir, 'test_images.pickle'), 'rb') as f:
-    test_images = pickle.load(f)
+    with open(os.path.join(data_dir, 'test_images.pickle'), 'rb') as f:
+        test_images = pickle.load(f)
 
-with open(os.path.join(data_dir, 'test_labels.pickle'), 'rb') as f:
-    test_labels = pickle.load(f)
+    with open(os.path.join(data_dir, 'test_labels.pickle'), 'rb') as f:
+        test_labels = pickle.load(f)
 
-class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
-               'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+    class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+                   'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 
-# rando = random.randint(0, len(test_images) - 1)
-# show(rando, 'An Example Image: {}'.format(class_names[test_labels[rando]]))
+    # rando = random.randint(0, len(test_images) - 1)
+    # show(rando, 'An Example Image: {}'.format(class_names[test_labels[rando]]))
 
-# https://www.tensorflow.org/tfx/serving/api_rest
+    # https://www.tensorflow.org/tfx/serving/api_rest
 
-headers = {"content-type": "application/json"}
-data = json.dumps({"signature_name": "serving_default", "instances": test_images[0:3].tolist()})
-json_response = requests.post('http://localhost:8501/v1/models/kubeflow-mnist:predict', data=data, headers=headers)
-predictions = json.loads(json_response.text)['predictions']
+    headers = {"content-type": "application/json"}
+    data = json.dumps({"signature_name": "serving_default", "instances": test_images[0:3].tolist()})
+    json_response = requests.post('http://localhost:8501/v1/models/kubeflow-mnist:predict', data=data, headers=headers)
+    predictions = json.loads(json_response.text)['predictions']
 
-print(f'Predictions: {predictions}')
+    print(f'Predictions: {predictions}')
 
+    show(0, 'The model thought this was a {} (class {}), and it was actually a {} (class {})'.format(
+      class_names[np.argmax(predictions[0])], np.argmax(predictions[0]), class_names[test_labels[0]], test_labels[0]))
 
-show(0, 'The model thought this was a {} (class {}), and it was actually a {} (class {})'.format(
-  class_names[np.argmax(predictions[0])], np.argmax(predictions[0]), class_names[test_labels[0]], test_labels[0]))
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Kubeflow MNIST Serving Demo')
+    parser.add_argument('--data_dir', help='path to images and labels.')
+    args = parser.parse_args()
+
+    servedemo(data_dir=args.data_dir)
