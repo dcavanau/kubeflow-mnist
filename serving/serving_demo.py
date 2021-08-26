@@ -17,7 +17,8 @@ def show(idx, title):
     plt.title('\n\n{}'.format(title), fontdict={'size': 16})
     plt.show()
 
-data = "/root"
+data = "/root/data"
+
 with open(os.path.join('data', 'test_images.pickle'), 'rb') as f:
     test_images = pickle.load(f)
 
