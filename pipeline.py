@@ -63,7 +63,7 @@ def packaging(image: str, pvolume: PipelineVolume, data_dir: str, ):
     return dsl.ContainerOp(
         name='packaging',
         image=image,
-        commands = [f"tar -cjf /workspace/kubeflow-mnist.tar -C /workspace kubeflow-mnist"]
+        command = [f"tar -cjf /workspace/kubeflow-mnist.tar -C /workspace kubeflow-mnist"],
         arguments=["--data_dir", data_dir],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={"/workspace": pvolume}
@@ -75,21 +75,21 @@ def packaging(image: str, pvolume: PipelineVolume, data_dir: str, ):
     description='Fashion MNIST Training Pipeline to be executed on KubeFlow.'
 )
 def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
-                      repo_url: str = 'https://github.com/dcavanau/kubeflow-mnist.git',
+                      repo_url: str = 'https://61acc7bc6d89fb89dffb2c7e2142adffef6b13f1:x-oauth-basic@github.com/dcavanau/kubeflow-mnist.git',
                       data_dir: str = '/workspace'):
-    git_clone = git_clone_op(repo_url=repo_url)
+    _git_clone = git_clone_op(repo_url=repo_url)
 
-    preprocess_data = preprocess_op(image=image,
-                                    pvolume=git_clone.pvolume,
-                                    data_dir=data_dir)
+    _preprocess_data = preprocess_op(image=image,
+                                    pvolume=_git_clone.pvolume,
+                                    data_dir=data_dir).after(_git_clone)
 
     _training_and_eval = train_and_eval_op(image=image,
-                                           pvolume=preprocess_data.pvolume,
-                                           data_dir=data_dir)
+                                           pvolume=_preprocess_data.pvolume,
+                                           data_dir=data_dir).after(_preprocess_data)
 
-    package_data = packaging(image=image,
-                                           pvolume=preprocess_data.pvolume,
-                                           data_dir=data_dir)
+    _package_data = packaging(image=image,
+                             pvolume=_training_and_eval.pvolume,
+                             data_dir=data_dir).after(_training_and_eval)
 
 
 if __name__ == '__main__':
