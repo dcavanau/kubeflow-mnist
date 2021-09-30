@@ -59,24 +59,36 @@ def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, ):
         pvolumes={"/workspace": pvolume}
     )
 
+def packaging(image: str, pvolume: PipelineVolume, data_dir: str, ):
+    return dsl.ContainerOp(
+        name='packaging',
+        image=image,
+        command = [f"tar -cjf /workspace/kubeflow-mnist.tar -C /workspace kubeflow-mnist"],
+        arguments=["--data_dir", data_dir],
+        container_kwargs={'image_pull_policy': 'IfNotPresent'},
+        pvolumes={"/workspace": pvolume}
+    )
 
 @dsl.pipeline(
     name='Fashion MNIST Training Pipeline',
     description='Fashion MNIST Training Pipeline to be executed on KubeFlow.'
 )
-def training_pipeline(image: str = 'dcavanau/kubeflow-mnist', repo_url: str = 'https://github.com/dcavanau/kubeflow-mnist.git', data_dir: str = '/workspace'):
-    # clone the git repository with the scripts                  
-    git_clone = git_clone_op(repo_url=repo_url)
+def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
+                      repo_url: str = 'https://61acc7bc6d89fb89dffb2c7e2142adffef6b13f1:x-oauth-basic@github.com/dcavanau/kubeflow-mnist.git',
+                      data_dir: str = '/workspace'):
+    _git_clone = git_clone_op(repo_url=repo_url)
 
-    # preprocess the data set
-    preprocess_data = preprocess_op(image=image,
-                                    pvolume=git_clone.pvolume,
-                                    data_dir=data_dir)
+    _preprocess_data = preprocess_op(image=image,
+                                    pvolume=_git_clone.pvolume,
+                                    data_dir=data_dir).after(_git_clone)
 
-    training_and_eval = train_and_eval_op(image=image,
-                                          pvolume=preprocess_data.pvolume,
-                                          data_dir=data_dir)
+    _training_and_eval = train_and_eval_op(image=image,
+                                           pvolume=_preprocess_data.pvolume,
+                                           data_dir=data_dir).after(_preprocess_data)
 
+    _package_data = packaging(image=image,
+                             pvolume=_training_and_eval.pvolume,
+                             data_dir=data_dir).after(_training_and_eval)
 
 if __name__ == '__main__':
     from kfp_tekton.compiler import TektonCompiler

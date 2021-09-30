@@ -48,7 +48,7 @@ def preprocess_op(image: str, pvolume: PipelineVolume, data_dir: str):
     )
 
 
-def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, ):
+def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str):
     return dsl.ContainerOp(
         name='training and evaluation',
         image=image,
@@ -59,12 +59,12 @@ def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, ):
         pvolumes={"/workspace": pvolume}
     )
 
-def packaging(image: str, pvolume: PipelineVolume, data_dir: str, ):
+
+def packaging(image: str, pvolume: PipelineVolume, data_dir: str):
     return dsl.ContainerOp(
         name='packaging',
         image=image,
-        command = [f"tar -cjf /workspace/kubeflow-mnist.tar -C /workspace kubeflow-mnist"],
-        arguments=["--data_dir", data_dir],
+        command=[f"cd /workspace", f"tar -cjf /workspace/kubeflow-mnist.tar -C /workspace kubeflow-mnist"],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={"/workspace": pvolume}
     )
@@ -88,8 +88,8 @@ def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
                                            data_dir=data_dir).after(_preprocess_data)
 
     _package_data = packaging(image=image,
-                             pvolume=_training_and_eval.pvolume,
-                             data_dir=data_dir).after(_training_and_eval)
+                              pvolume=_preprocess_data.pvolume,
+                              data_dir=data_dir).after(_training_and_eval)
 
 
 if __name__ == '__main__':

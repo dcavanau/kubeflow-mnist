@@ -57,3 +57,5 @@ RUN /opt/conda/bin/activate kubeflow-mnist
 
 # Set the new Allocator
 ENV LD_PRELOAD /usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
+
+USER kflow
