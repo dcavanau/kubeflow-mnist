@@ -8,9 +8,11 @@ import pickle
 import argparse
 
 from constants import PROJECT_ROOT
+from constants import PROJECT_NAME
+from constants import PROJECT_BASE
 
 
-def train(data_dir: str):
+def train(data_dir: str, model_path: str):
     # Training
     model = keras.Sequential([
         keras.layers.Flatten(input_shape=(28, 28)),
@@ -42,16 +44,16 @@ def train(data_dir: str):
     print(f'Test Acc: {test_acc}')
 
     # Save model
-    if args.model_path:
-        model_path = args.model_path
-    else:
+    if model_path is None:
         model_path = PROJECT_ROOT
+    else:
+        model_path = os.path.join('/', model_path, PROJECT_NAME)
 
     ts = calendar.timegm(time.gmtime())
     model_path = os.path.join(model_path, str(ts))
     tf.saved_model.save(model, model_path)
 
-    with open(os.path.join(PROJECT_ROOT, 'output.txt'), 'w') as f:
+    with open(os.path.join(model_path, 'output.txt'), 'w') as f:
         f.write(model_path)
         print(f'Model written to: {model_path}')
 
@@ -62,4 +64,4 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', help='folder to export model')
     args = parser.parse_args()
 
-    train(data_dir=args.data_dir)
+    train(data_dir=args.data_dir, model_path=args.model_path)
