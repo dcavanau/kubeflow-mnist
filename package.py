@@ -1,6 +1,7 @@
 import calendar
 import os
 import subprocess
+import sys
 
 import argparse
 
@@ -18,12 +19,13 @@ def package(model_path: str, model_name:str):
         model_name = PROJECT_NAME
 
     package_name = os.path.join('/', model_path, model_name)
-    package_name = package_name + '.tar'
+    package_name = package_name + '.tar.gz'
+    tar_command = 'tar -czvf  %s -C %s %s' % (package_name, model_path, model_name)
+    subprocess.run(tar_command, shell=True, check=True)
 
-    subprocess.run(f'ar -cjf {package_name} -C {model_path} {model_name}')
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Kubeflow FMNIST packaging script')
+    parser = argparse.ArgumentParser(description='Kubeflow MNIST packaging script')
     parser.add_argument('--model_path', help='base folder to export model')
     parser.add_argument('--model_name', help='model name to append to the model path')
     args = parser.parse_args()

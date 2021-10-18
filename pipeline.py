@@ -91,7 +91,9 @@ def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
                                            data_dir=data_dir).after(_preprocess_data)
 
     _packaging = packaging(image=image,
-                           pvolume=_training_and_eval.pvolume)
+                           pvolume=_training_and_eval.pvolume,
+                           model_path=data_dir,
+                           model_name='kubeflow-mnist').after(_training_and_eval)
 
 
 if __name__ == '__main__':
