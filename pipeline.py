@@ -46,7 +46,6 @@ def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str):
         image=image,
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/train.py"],
         arguments=["--data_dir", data_dir],
-        file_outputs={'output': f'{PROJECT_ROOT}/output.txt'},
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={"/workspace": pvolume}
     )
@@ -58,8 +57,8 @@ def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name:s
         image=image,
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/package.py"],
         arguments=["--model_path", model_path, "--model_name", model_name],
+ #       file_outputs={'output': f'{model_path}/{model_name}.tar'},
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
-        file_outputs={'output': f'/workspace/kubeflow-mnist.tar'},
         pvolumes={"/workspace": pvolume}
     )
 
