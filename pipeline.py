@@ -47,20 +47,11 @@ def preprocess_op(image: str, pvolume: PipelineVolume, data_dir: str):
 
 
 def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str):
-
-    commands = [
-        f"ls -lar"]
-        f"{CONDA_PYTHON_CMD} {PROJECT_ROOT}/train.py --data_dir={data_dir}",
-        f"cd {PROJECT_ROOT}",
-        f"ls -lar"]
-
     return dsl.ContainerOp(
         name='training and evaluation',
         image=image,
-        command=['sh'],
-        arguments=['-c', ' && '.join(commands)],
-#        command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/train.py"],
-#        arguments=["--data_dir", data_dir],
+        command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/train.py"],
+        arguments=["--data_dir", data_dir],
         file_outputs={'output': f'{PROJECT_ROOT}/output.txt'},
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={"/workspace": pvolume}
@@ -69,9 +60,9 @@ def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str):
 
 def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: str):
     commands = [
-        f"tar -czvf {PROJECT_ROOT}/{PROJECT_NAME}.tar.gz -C {PROJECT_ROOT}",
-        f"cd {PROJECT_ROOT}",
-        f"ls -lar"]
+        f"ls -lar /workspace",
+        f"tar -czvf {PROJECT_ROOT}/{PROJECT_NAME}.tar.gz -C {PROJECT_ROOT}"]
+   
     return dsl.ContainerOp(
         name='packaging',
         image=image,

@@ -15,15 +15,19 @@ def preprocess(data_dir: str):
 
     with open(os.path.join(data_dir, 'train_images.pickle'), 'wb') as f:
         pickle.dump(train_images, f)
+        f.close()
 
     with open(os.path.join(data_dir, 'train_labels.pickle'), 'wb') as f:
         pickle.dump(train_labels, f)
+        f.close()
 
     with open(os.path.join(data_dir, 'test_images.pickle'), 'wb') as f:
         pickle.dump(test_images, f)
+        f.close()
 
     with open(os.path.join(data_dir, 'test_labels.pickle'), 'wb') as f:
         pickle.dump(test_labels, f)
+        f.close()
 
 
 if __name__ == '__main__':
