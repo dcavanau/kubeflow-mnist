@@ -47,12 +47,20 @@ def preprocess_op(image: str, pvolume: PipelineVolume, data_dir: str):
 
 
 def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str):
+    commands = [
+        f"ls -lar /workspace",
+        f"{CONDA_PYTHON_CMD} {PROJECT_ROOT}/train.py",
+        f"tar -czvf {PROJECT_ROOT}/{PROJECT_NAME}.tar.gz -C {PROJECT_ROOT}",
+        f"ls -lar /workspace"]
+
     return dsl.ContainerOp(
         name='training and evaluation',
         image=image,
-        command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/train.py"],
-        arguments=["--data_dir", data_dir],
-        file_outputs={'output': f'{PROJECT_ROOT}/output.txt'},
+        command=['sh'],
+        arguments=['-c', ' && '.join(commands)],
+#        command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/train.py"],
+#        arguments=["--data_dir", data_dir],
+#        file_outputs={'output': f'{PROJECT_ROOT}/output.txt'},
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={"/workspace": pvolume}
     )
@@ -94,10 +102,10 @@ def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
                                            pvolume=_preprocess_data.pvolume,
                                            data_dir=data_dir)
 
-    _packaging = packaging(image=image,
-                           pvolume=_training_and_eval.pvolume,
-                           model_path=data_dir,
-                           model_name='kubeflow-mnist')
+#    _packaging = packaging(image=image,
+#                           pvolume=_training_and_eval.pvolume,
+#                           model_path=data_dir,
+#                           model_name='kubeflow-mnist')
 
 
 if __name__ == '__main__':
