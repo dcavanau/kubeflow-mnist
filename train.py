@@ -65,10 +65,10 @@ def train(data_dir: str, model_path: str, model_name:str):
 
     os.sync()
 
-    package_name = os.path.join('/', model_path, model_name)
-    package_name = package_name + '.tar.gz'
-    tar_command = 'tar -czvf  %s -C %s %s' % (package_name, model_path, model_name)
-    subprocess.run(tar_command, shell=True, check=True)
+#    package_name = os.path.join('/', model_path, model_name)
+#    package_name = package_name + '.tar.gz'
+#    tar_command = 'tar -czvf  %s -C %s %s' % (package_name, model_path, model_name)
+#    subprocess.run(tar_command, shell=True, check=True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Kubeflow FMNIST training script')
