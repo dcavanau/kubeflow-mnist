@@ -46,20 +46,12 @@ def preprocess_op(image: str, pvolume: PipelineVolume, data_dir: str):
     )
 
 
-def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str):
-#    commands = [
-#        f"ls -lar /workspace",
-#        f"{CONDA_PYTHON_CMD} {PROJECT_ROOT}/train.py",
-#        f"tar -czvf {PROJECT_ROOT}/{PROJECT_NAME}.tar.gz -C {PROJECT_ROOT}",
-#        f"ls -lar /workspace"]
-
+def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, model_path: str, model_name: str):
     return dsl.ContainerOp(
         name='training and evaluation',
         image=image,
-#        command=['sh'],
-#        arguments=['-c', ' && '.join(commands)],
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/train.py"],
-        arguments=["--data_dir", data_dir],
+        arguments=["--data_dir", data_dir, "--model_path", model_path, "--model_name", model_name],
         file_outputs={'output': f'{PROJECT_ROOT}/output.txt'},
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={"/workspace": pvolume}
@@ -67,18 +59,11 @@ def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str):
 
 
 def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: str):
-    commands = [
-        f"ls -lar /workspace",
-        f"tar -czvf {PROJECT_ROOT}/{PROJECT_NAME}.tar.gz -C {PROJECT_ROOT}"]
-   
     return dsl.ContainerOp(
         name='packaging',
         image=image,
-#        command=['sh'],
-#        arguments=['-c', ' && '.join(commands)],
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/package.py"],
         arguments=["--model_path", model_path, "--model_name", model_name],
-        file_outputs={'output': f'{model_path}/{model_name}.tar'},
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={"/workspace": pvolume}
     )
@@ -100,7 +85,9 @@ def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
 
     _training_and_eval = train_and_eval_op(image=image,
                                            pvolume=_preprocess_data.pvolume,
-                                           data_dir=data_dir)
+                                           data_dir=data_dir,
+                                           model_path=data_dir,
+                                           model_name='kubeflow-mnist')
 
     _packaging = packaging(image=image,
                            pvolume=_training_and_eval.pvolume,
