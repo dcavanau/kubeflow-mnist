@@ -5,7 +5,7 @@
 # example on how to run:
 # docker run -it dcavanau/kubeflow-mnist /bin/bash
 
-FROM  tensorflow/tensorflow:2.2.3-gpu-py3
+FROM  tensorflow/tensorflow:2.7.0-gpu
 LABEL MAINTAINER "David Cavanaugh <dcavanau@us.ibm.com>"
 SHELL ["/bin/bash", "-c"]
 
