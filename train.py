@@ -14,6 +14,15 @@ from constants import PROJECT_BASE
 
 
 def train(data_dir: str, model_path: str, model_name:str):
+    # Set up the paths
+    if model_path is None:
+        model_path = PROJECT_BASE
+
+    if model_name is None:
+        model_name = PROJECT_NAME
+
+    project_root = os.path.join('/', model_path, model_name)
+
     # Training
     model = keras.Sequential([
         keras.layers.Flatten(input_shape=(28, 28)),
@@ -43,15 +52,6 @@ def train(data_dir: str, model_path: str, model_name:str):
 
     print(f'Test Loss: {test_loss}')
     print(f'Test Acc: {test_acc}')
-
-    # Set up the paths
-    if model_path is None:
-        model_path = PROJECT_BASE
-
-    if model_name is None:
-        model_name = PROJECT_NAME
-
-    project_root = os.path.join('/', model_path, model_name)
 
     # Save model
     ts = calendar.timegm(time.gmtime())
