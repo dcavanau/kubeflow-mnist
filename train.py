@@ -58,10 +58,10 @@ def train(data_dir: str, model_path: str, model_name:str):
     project_root = os.path.join(project_root, str(ts))
     tf.saved_model.save(model, project_root)
 
-    with open(os.path.join(model_path, 'output.txt'), 'w') as f:
-        f.write(project_root)
-        print(f'Model written to: {project_root}')
-        f.close()
+#    with open(os.path.join(model_path, 'output.txt'), 'w') as f:
+#        f.write(project_root)
+#        print(f'Model written to: {project_root}')
+#        f.close()
 
     os.sync()
 
