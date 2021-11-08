@@ -14,7 +14,7 @@ from constants import PROJECT_BASE
 from constants import MODEL_VERSION
 
 
-def train(data_dir: str, model_path: str, model_name:str, model_version:str):
+def train(data_dir: str, model_path: str, model_name:str, model_version:int):
     # Set up the paths
     if model_path is None:
         model_path = PROJECT_BASE
@@ -58,7 +58,7 @@ def train(data_dir: str, model_path: str, model_name:str, model_version:str):
     print(f'Test Acc: {test_acc}')
 
     # Save model
-    project_root = os.path.join(project_root, str(int(model_version)))
+    project_root = os.path.join(project_root, str(model_version))
     tf.saved_model.save(model, project_root)
 
     os.sync()
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', help='path to images and labels.')
     parser.add_argument('--model_path', help='base folder to export model')
     parser.add_argument('--model_name', help='model name to append to the model path')
-    parser.add_argument('--model_version', help='integer model version to append to the model path')
+    parser.add_argument('--model_version', type=int, help='integer model version to append to the model path')
     args = parser.parse_args()
 
     train(data_dir=args.data_dir, model_path=args.model_path, model_name=args.model_name, model_version=args.model_version)
