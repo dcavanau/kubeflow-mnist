@@ -7,9 +7,10 @@ import argparse
 
 from constants import PROJECT_NAME
 from constants import PROJECT_BASE
+from constants import MODEL_VERSION
 
 
-def package(model_path: str, model_name:str):
+def package(model_path: str, model_name:str, model_version: int):
 
     # Set up the paths
     if model_path is None:
@@ -18,9 +19,12 @@ def package(model_path: str, model_name:str):
     if model_name is None:
         model_name = PROJECT_NAME
 
+    if model_version is None:
+        model_version = MODEL_VERSION
+
     package_name = os.path.join('/', model_path, model_name)
     package_name = package_name + '.tar.gz'
-    tar_command = 'tar -czvf  %s -C %s %s' % (package_name, model_path, model_name)
+    tar_command = 'tar -czvf  %s -C %s %s/%s' % (package_name, model_path, model_name, str(model_version))
     subprocess.run(tar_command, shell=True, check=True)
 
 
@@ -28,6 +32,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Kubeflow MNIST packaging script')
     parser.add_argument('--model_path', help='base folder to export model')
     parser.add_argument('--model_name', help='model name to append to the model path')
-    args = parser.parse_args()
+    parser.add_argument('--model_version', help='model version to append to the model path')
+   args = parser.parse_args()
 
-    package(model_path=args.model_path, model_name=args.model_name)
+    package(model_path=args.model_path, model_name=args.model_name, model_version=args.model_version)
