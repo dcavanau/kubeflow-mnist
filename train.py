@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', help='path to images and labels.')
     parser.add_argument('--model_path', help='base folder to export model')
     parser.add_argument('--model_name', help='model name to append to the model path')
-    parser.add_argument('--model_version', help='model version to append to the model path')
+    parser.add_argument('--model_version', type=int, help='model version to append to the model path')
     args = parser.parse_args()
 
     train(data_dir=args.data_dir, model_path=args.model_path, model_name=args.model_name, model_version=args.model_version)
