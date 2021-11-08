@@ -46,7 +46,7 @@ def preprocess_op(image: str, pvolume: PipelineVolume, data_dir: str):
     )
 
 
-def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, model_path: str, model_name: str, model_version: int):
+def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, model_path: str, model_name: str, model_version: str):
     return dsl.ContainerOp(
         name='training and evaluation',
         image=image,
@@ -57,7 +57,7 @@ def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, model_
     )
 
 
-def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: str, model_version: int):
+def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: str, model_version: str):
     return dsl.ContainerOp(
         name='packaging',
         image=image,
@@ -76,7 +76,7 @@ def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: 
 def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
                       repo_url: str = 'https://61acc7bc6d89fb89dffb2c7e2142adffef6b13f1:x-oauth-basic@github.com/dcavanau/kubeflow-mnist.git',
                       data_dir: str = '/workspace',
-                      model_version: int = 1):
+                      model_version: str = '1'):
 
     _git_clone = git_clone_op(repo_url=repo_url)
 
