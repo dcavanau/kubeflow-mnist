@@ -4,15 +4,14 @@ from kfp.dsl import PipelineVolume
 
 # To compile the pipeline:
 #   dsl-compile --py pipeline.py --output pipeline.tar.gz
-from constants import PROJECT_ROOT, PROJECT_NAME, CONDA_PYTHON_CMD
+from constants import PROJECT_ROOT, PROJECT_NAME, PROJECT_BASE, CONDA_PYTHON_CMD
 
 
 def git_clone_op(repo_url: str):
     image = 'alpine/git:latest'
 
     commands = [
-        f"rm -rf {PROJECT_ROOT}",
-        f"git clone {repo_url} {PROJECT_ROOT}",
+        f"git -C {PROJECT_ROOT} pull || git clone {repo_url} {PROJECT_ROOT}",
         f"cd {PROJECT_ROOT}",
         f"ls -lar"]
 
@@ -64,7 +63,7 @@ def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: 
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/package.py"],
         arguments=["--model_path", model_path, "--model_name", model_name, "--model_version", model_version],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
-        file_outputs={'output': f'{PROJECT_ROOT}/{model_name}.tgz'},
+        file_outputs={'output': f'{PROJECT_BASE}/{model_name}.tar.tgz'},
         pvolumes={"/workspace": pvolume}
     )
 

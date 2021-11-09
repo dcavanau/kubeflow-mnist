@@ -60,7 +60,8 @@ def train(data_dir: str, model_path: str, model_name:str, model_version:int):
     # Save model
     project_root = os.path.join(project_root, str(model_version))
     tf.saved_model.save(model, project_root)
-
+    print(f'Model written to: {model_path}')
+    
     os.sync()
 
 
