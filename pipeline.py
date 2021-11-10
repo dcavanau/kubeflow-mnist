@@ -11,7 +11,7 @@ def git_clone_op(repo_url: str):
     image = 'alpine/git:latest'
 
     commands = [
-        f"git -C {PROJECT_ROOT} pull || git clone {repo_url} {PROJECT_ROOT}",
+        f"git clone {repo_url} {PROJECT_ROOT} || git -C {PROJECT_ROOT} pull",
         f"cd {PROJECT_ROOT}",
         f"ls -lar"]
 
@@ -63,7 +63,21 @@ def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: 
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/package.py"],
         arguments=["--model_path", model_path, "--model_name", model_name, "--model_version", model_version],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
-        file_outputs={'output': f'{PROJECT_BASE}/{model_name}.tar.tgz'},
+        pvolumes={"/workspace": pvolume}
+    )
+
+def publish(pvolume: PipelineVolume):
+    image = 'dcavanau/kubeflow-horizon'
+    commands = [
+        f"cd /tmp",
+        f"hzn mms object publish --object=/workspace/kubeflow-mnist.tar.gz --def=mms-model-deploy.json"]
+   
+    return dsl.ContainerOp(
+        name='publish',
+        image=image,
+        command=['sh'],
+        arguments=['-c', ' && '.join(commands)],
+        container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={"/workspace": pvolume}
     )
 
@@ -95,6 +109,9 @@ def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
                            model_path=data_dir,
                            model_name='kubeflow-mnist',
                            model_version=model_version)
+
+
+    _publish = publish(pvolume=_packaging.pvolume)
 
 
 if __name__ == '__main__':
