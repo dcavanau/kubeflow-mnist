@@ -12,8 +12,7 @@ def git_clone_op(repo_url: str):
 
     commands = [
         f"git clone {repo_url} {PROJECT_ROOT} || git -C {PROJECT_ROOT} pull",
-        f"cd {PROJECT_ROOT}",
-        f"ls -lar"]
+        f"cd {PROJECT_ROOT}"]
 
     volume_op = dsl.VolumeOp(
         name="create pipeline volume",
@@ -28,7 +27,7 @@ def git_clone_op(repo_url: str):
         command=['sh'],
         arguments=['-c', ' && '.join(commands)],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
-        pvolumes={"/workspace": volume_op.volume}
+        pvolumes={f"/{PROJECT_BASE}": volume_op.volume}
     )
 
     return op
@@ -39,9 +38,9 @@ def preprocess_op(image: str, pvolume: PipelineVolume, data_dir: str):
         name='preprocessing',
         image=image,
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/preprocessing.py"],
-        arguments=["--data_dir", data_dir],
+        arguments=["--data_dir", os.path.join('/', PROJECT_BASE, data_dir)],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
-        pvolumes={"/workspace": pvolume}
+        pvolumes={f"/{PROJECT_BASE}": pvolume}
     )
 
 
@@ -50,9 +49,12 @@ def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, model_
         name='training and evaluation',
         image=image,
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/train.py"],
-        arguments=["--data_dir", data_dir, "--model_path", model_path, "--model_name", model_name, "--model_version", model_version],
+        arguments=["--data_dir", data_diros.path.join('/', PROJECT_BASE, data_dir), 
+                   "--model_path", model_path, 
+                   "--model_name", model_name, 
+                   "--model_version", model_version],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
-        pvolumes={"/workspace": pvolume}
+        pvolumes={f"/{PROJECT_BASE}": pvolume}
     )
 
 
@@ -63,14 +65,15 @@ def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: 
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/package.py"],
         arguments=["--model_path", model_path, "--model_name", model_name, "--model_version", model_version],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
-        pvolumes={"/workspace": pvolume}
+        pvolumes={f"/{PROJECT_BASE}": pvolume}
     )
 
 def publish(pvolume: PipelineVolume):
     image = 'dcavanau/kubeflow-horizon'
     commands = [
         f"cd /tmp",
-        f"hzn mms object publish --object=/workspace/kubeflow-mnist.tar.gz --def=mms-model-deploy.json"]
+        f"make publish-model",
+        f"make publish-model-config"]
    
     return dsl.ContainerOp(
         name='publish',
@@ -78,7 +81,7 @@ def publish(pvolume: PipelineVolume):
         command=['sh'],
         arguments=['-c', ' && '.join(commands)],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
-        pvolumes={"/workspace": pvolume}
+        pvolumes={f"/{PROJECT_BASE}": pvolume}
     )
 
 
