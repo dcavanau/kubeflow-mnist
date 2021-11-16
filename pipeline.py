@@ -1,4 +1,4 @@
-
+import os
 import kfp.dsl as dsl
 from kfp.dsl import PipelineVolume
 
@@ -34,25 +34,27 @@ def git_clone_op(repo_url: str):
 
 
 def preprocess_op(image: str, pvolume: PipelineVolume, data_dir: str):
+    local_dir=str(os.path.join('/', PROJECT_BASE, str(data_dir)))
     return dsl.ContainerOp(
         name='preprocessing',
         image=image,
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/preprocessing.py"],
-        arguments=["--data_dir", os.path.join('/', PROJECT_BASE, data_dir)],
+        arguments=["--data_dir", local_dir],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={f"/{PROJECT_BASE}": pvolume}
     )
 
 
 def train_and_eval_op(image: str, pvolume: PipelineVolume, data_dir: str, model_path: str, model_name: str, model_version: int):
+    local_dir=str(os.path.join('/', PROJECT_BASE, str(data_dir)))
     return dsl.ContainerOp(
         name='training and evaluation',
         image=image,
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/train.py"],
-        arguments=["--data_dir", data_diros.path.join('/', PROJECT_BASE, data_dir), 
+        arguments=["--data_dir", local_dir, 
                    "--model_path", model_path, 
-                   "--model_name", model_name, 
-                   "--model_version", model_version],
+                   "--model_name", model_name,                  
+                   "--model_version", str(model_version)],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={f"/{PROJECT_BASE}": pvolume}
     )
@@ -63,13 +65,12 @@ def packaging(image: str, pvolume: PipelineVolume, model_path: str, model_name: 
         name='packaging',
         image=image,
         command=[CONDA_PYTHON_CMD, f"{PROJECT_ROOT}/package.py"],
-        arguments=["--model_path", model_path, "--model_name", model_name, "--model_version", model_version],
+        arguments=["--model_path", model_path, "--model_name", model_name, "--model_version", str(model_version)],
         container_kwargs={'image_pull_policy': 'IfNotPresent'},
         pvolumes={f"/{PROJECT_BASE}": pvolume}
     )
 
-def publish(pvolume: PipelineVolume):
-    image = 'dcavanau/kubeflow-horizon'
+def publish(image: str, pvolume: PipelineVolume):
     commands = [
         f"cd /tmp",
         f"make publish-model",
@@ -91,7 +92,7 @@ def publish(pvolume: PipelineVolume):
 )
 def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
                       repo_url: str = 'https://61acc7bc6d89fb89dffb2c7e2142adffef6b13f1:x-oauth-basic@github.com/dcavanau/kubeflow-mnist.git',
-                      data_dir: str = '/workspace',
+                      data_dir: str = '/data',
                       model_version: int = 1):
 
     _git_clone = git_clone_op(repo_url=repo_url)
@@ -114,7 +115,8 @@ def training_pipeline(image: str = 'dcavanau/kubeflow-mnist',
                            model_version=model_version)
 
 
-    _publish = publish(pvolume=_packaging.pvolume)
+    _publish = publish(image='dcavanau/kubeflow-horizon',
+                       pvolume=_packaging.pvolume)
 
 
 if __name__ == '__main__':
